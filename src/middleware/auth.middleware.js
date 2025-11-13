@@ -1,18 +1,33 @@
-import { verifyToken } from "../utils/jwt.js";
-import { AppError } from "../utils/error.js";
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-export const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next(new AppError("Unauthorized", 401));
-  }
+dotenv.config();
 
-  const token = authHeader.split(" ")[1];
+export const authenticate = (req, res, next) => {
   try {
-    const decoded = verifyToken(token);
-    req.user = decoded;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer '))
+      return res.status(401).json({ success: false, message: 'No token provided' });
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // { id, role, email, etc. }
+
     next();
   } catch (err) {
-    next(new AppError("Invalid or expired token", 403));
+    console.error(err);
+    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
+};
+
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user)
+      return res.status(403).json({ success: false, message: 'User not authenticated' });
+
+    if (!roles.includes(req.user.role))
+      return res.status(403).json({ success: false, message: 'Access denied' });
+
+    next();
+  };
 };
