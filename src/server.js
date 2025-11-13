@@ -1,11 +1,12 @@
 import app from './app.js';
 import pool from './db/index.js';
-import redisClient from './db/redis.js';
+import { initIndices } from "./utils/initElastic.js";
 
 const PORT = process.env.PORT || 4000;
 
 async function start() {
   try {
+    await initIndices();
     await pool.connect();
     console.log('Connected to PostgreSQL & Redis');
 
