@@ -30,11 +30,6 @@
 	CREATE DATABASE amrutam_db;
   ```
 
-- Run Migrations : 
-  ```sh
-	npm run migrate
-  ```
-
 - Install Redis : 
   ```sh
 	brew install redis
@@ -74,3 +69,4 @@
 	.env                            
 	package.json
   ```
+
